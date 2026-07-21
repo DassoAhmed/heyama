@@ -1,0 +1,17 @@
+import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
+import { ConfigModule } from '@nestjs/config';
+import { ObjectsModule } from './objects/objects.module';
+import { AppController } from './app.controller';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    MongooseModule.forRoot(process.env.MONGODB_URI || 'mongodb://localhost:27017/heyama'),
+    ObjectsModule,
+  ],
+  controllers: [AppController],
+})
+export class AppModule {}
