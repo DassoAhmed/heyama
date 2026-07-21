@@ -1,6 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
+export const OBJECT_MODEL = 'Object';
+
 @Schema({ timestamps: true })
 export class ObjectEntity extends Document {
   @Prop({ required: true })

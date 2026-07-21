@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Param, Body, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Body, UseInterceptors, UploadedFile, HttpException, HttpStatus } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ObjectsService } from './objects.service';
 import { CreateObjectDto } from './dto/create-object.dto';
@@ -18,24 +18,71 @@ export class ObjectsController {
     @Body() createObjectDto: CreateObjectDto,
     @UploadedFile() file: Express.Multer.File,
   ): Promise<ObjectResponseDto> {
-    const newObject = await this.objectsService.create(createObjectDto, file);
-    this.objectsGateway.notifyObjectCreated(newObject);
-    return newObject;
+    try {
+      if (!file) {
+        throw new HttpException('Image file is required', HttpStatus.BAD_REQUEST);
+      }
+      
+      const newObject = await this.objectsService.create(createObjectDto, file);
+      
+      // Notify via WebSocket
+      this.objectsGateway.notifyObjectCreated(newObject);
+      
+      return newObject;
+    } catch (error) {
+      console.error('❌ Error in create controller:', error.message);
+      throw new HttpException(
+        error.message || 'Failed to create object',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 
   @Get()
   async findAll(): Promise<ObjectResponseDto[]> {
-    return this.objectsService.findAll();
+    try {
+      return await this.objectsService.findAll();
+    } catch (error) {
+      console.error('❌ Error in findAll controller:', error.message);
+      throw new HttpException(
+        'Failed to fetch objects',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<ObjectResponseDto> {
-    return this.objectsService.findOne(id);
+    try {
+      return await this.objectsService.findOne(id);
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      if (error.status === 404) {
+        throw new HttpException('Object not found', HttpStatus.NOT_FOUND);
+      }
+      throw new HttpException(
+        'Failed to fetch object',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 
   @Delete(':id')
   async delete(@Param('id') id: string): Promise<void> {
-    await this.objectsService.delete(id);
-    this.objectsGateway.notifyObjectDeleted(id);
+    try {
+      await this.objectsService.delete(id);
+      
+      // Notify via WebSocket
+      this.objectsGateway.notifyObjectDeleted(id);
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      if (error.status === 404) {
+        throw new HttpException('Object not found', HttpStatus.NOT_FOUND);
+      }
+      throw new HttpException(
+        'Failed to delete object',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 }
