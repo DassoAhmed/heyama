@@ -1,0 +1,11 @@
+# SPA routing
+/objects/* /index.html 200
+/create /index.html 200
+/object/* /index.html 200
+/* /index.html 200
+
+# API proxy (replace with your backend URL)
+/api/* https://your-backend-api.com/api/:splat 200
+
+# 404 handling
+/* /index.html 404

@@ -14,10 +14,13 @@ interface Object {
   createdAt: string
 }
 
+// generateStaticParams removed - this is a client-side only page
+
 export default function ObjectDetailPage() {
   const [object, setObject] = useState<Object | null>(null)
   const [loading, setLoading] = useState(true)
   const [imageError, setImageError] = useState(false)
+  const [imageLoading, setImageLoading] = useState(true)
   const params = useParams()
   const router = useRouter()
   const id = params.id as string
@@ -43,6 +46,18 @@ export default function ObjectDetailPage() {
   const handleImageError = () => {
     console.error('❌ Failed to load image:', object?.imageUrl)
     setImageError(true)
+    setImageLoading(false)
+  }
+
+  const handleImageLoad = () => {
+    console.log('✅ Image loaded successfully')
+    setImageLoading(false)
+  }
+
+  // Generate a fallback image
+  const getFallbackImage = () => {
+    const title = object?.title || 'Image'
+    return `https://via.placeholder.com/800x600/cccccc/666666?text=${encodeURIComponent(title)}`
   }
 
   if (loading) {
@@ -84,22 +99,52 @@ export default function ObjectDetailPage() {
           <CardTitle className="text-2xl">{object.title}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {!imageError ? (
-            <img
-              src={object.imageUrl}
-              alt={object.title}
-              className="w-full h-64 object-cover rounded-lg"
-              onError={handleImageError}
-            />
-          ) : (
-            <div className="w-full h-64 bg-gray-200 flex items-center justify-center rounded-lg">
-              <span className="text-gray-500">Image not available</span>
-            </div>
-          )}
+          {/* Image with loading state */}
+          <div className="relative w-full h-64 rounded-lg overflow-hidden bg-gray-100">
+            {imageLoading && !imageError && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                <div className="animate-pulse flex space-x-4">
+                  <div className="h-12 w-12 bg-gray-300 rounded-full"></div>
+                </div>
+              </div>
+            )}
+            
+            {!imageError ? (
+              <img
+                src={object.imageUrl}
+                alt={object.title}
+                className={`w-full h-64 object-cover transition-opacity duration-300 ${
+                  imageLoading ? 'opacity-0' : 'opacity-100'
+                }`}
+                onError={handleImageError}
+                onLoad={handleImageLoad}
+                crossOrigin="anonymous"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <div className="w-full h-64 flex flex-col items-center justify-center bg-gray-100">
+                <span className="text-gray-500 mb-2">Image not available</span>
+                <img
+                  src={getFallbackImage()}
+                  alt={object.title}
+                  className="w-full h-64 object-cover opacity-50"
+                />
+              </div>
+            )}
+          </div>
+
           <p className="text-gray-600">{object.description}</p>
           <p className="text-sm text-gray-400">
             Created: {new Date(object.createdAt).toLocaleDateString()}
           </p>
+          
+          {/* Debug info - remove in production */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mt-4 p-2 bg-gray-100 rounded text-xs text-gray-500 overflow-hidden">
+              <p>Debug - Image URL:</p>
+              <p className="truncate">{object.imageUrl}</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
