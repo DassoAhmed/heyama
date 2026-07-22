@@ -3,14 +3,15 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
+import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   
   // ==================== CORS CONFIGURATION ====================
   const allowedOrigins = [
-    'https://heyama-liard.vercel.app',  
-    'https://heyama-43xq.onrender.com',  
+    'https://heyama-liard.vercel.app',
+    'https://heyama-43xq.onrender.com',
     'http://localhost:3000',
     'http://localhost:3001',
     'http://localhost:8081',
@@ -19,9 +20,7 @@ async function bootstrap() {
 
   app.enableCors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps or curl)
       if (!origin) return callback(null, true);
-      
       if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
@@ -31,14 +30,21 @@ async function bootstrap() {
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
+    allowedHeaders: [
+      'Content-Type', 
+      'Authorization', 
+      'Accept', 
+      'X-Requested-With',
+      'Content-Disposition'
+    ],
     exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar'],
     maxAge: 86400,
   });
   
   // ==================== BODY PARSING ====================
-  app.useBodyParser('json', { limit: '10mb' });
-  app.useBodyParser('urlencoded', { extended: true, limit: '10mb' });
+  // Increase limit for file uploads
+  app.use(bodyParser.json({ limit: '50mb' }));
+  app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
   
   // ==================== STATIC FILES ====================
   app.useStaticAssets(join(process.cwd(), 'uploads'), {
