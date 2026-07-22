@@ -3,10 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { ObjectsAPI } from '@/services/api'
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
-import { ArrowLeft } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 
 interface Object {
   id: string
@@ -19,6 +17,7 @@ interface Object {
 export default function ObjectDetailPage() {
   const [object, setObject] = useState<Object | null>(null)
   const [loading, setLoading] = useState(true)
+  const [imageError, setImageError] = useState(false)
   const params = useParams()
   const router = useRouter()
   const id = params.id as string
@@ -29,28 +28,32 @@ export default function ObjectDetailPage() {
 
   const fetchObject = async () => {
     try {
+      console.log('📥 Fetching object:', id)
       const data = await ObjectsAPI.getOne(id)
+      console.log('✅ Object fetched:', data.title)
+      console.log('📷 Image URL:', data.imageUrl)
       setObject(data)
     } catch (error) {
-      console.error('Error fetching object:', error)
+      console.error('❌ Error fetching object:', error)
     } finally {
       setLoading(false)
     }
   }
 
+  const handleImageError = () => {
+    console.error('❌ Failed to load image:', object?.imageUrl)
+    setImageError(true)
+  }
+
   if (loading) {
     return (
       <div className="container mx-auto p-4 max-w-2xl">
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-8 w-3/4" />
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Skeleton className="h-64 w-full" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-3/4" />
-          </CardContent>
-        </Card>
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+          <div className="h-8 w-3/4 bg-gray-200 animate-pulse rounded mb-4"></div>
+          <div className="h-64 w-full bg-gray-200 animate-pulse rounded mb-4"></div>
+          <div className="h-4 w-full bg-gray-200 animate-pulse rounded mb-2"></div>
+          <div className="h-4 w-3/4 bg-gray-200 animate-pulse rounded"></div>
+        </div>
       </div>
     )
   }
@@ -60,7 +63,7 @@ export default function ObjectDetailPage() {
       <div className="container mx-auto p-4 text-center">
         <p>Object not found</p>
         <Button onClick={() => router.push('/')} className="mt-4">
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to List
+          ← Back to List
         </Button>
       </div>
     )
@@ -73,7 +76,7 @@ export default function ObjectDetailPage() {
         onClick={() => router.push('/')}
         className="mb-4"
       >
-        <ArrowLeft className="mr-2 h-4 w-4" /> Back to List
+        ← Back to List
       </Button>
 
       <Card>
@@ -81,11 +84,18 @@ export default function ObjectDetailPage() {
           <CardTitle className="text-2xl">{object.title}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <img
-            src={object.imageUrl}
-            alt={object.title}
-            className="w-full h-64 object-cover rounded-lg"
-          />
+          {!imageError ? (
+            <img
+              src={object.imageUrl}
+              alt={object.title}
+              className="w-full h-64 object-cover rounded-lg"
+              onError={handleImageError}
+            />
+          ) : (
+            <div className="w-full h-64 bg-gray-200 flex items-center justify-center rounded-lg">
+              <span className="text-gray-500">Image not available</span>
+            </div>
+          )}
           <p className="text-gray-600">{object.description}</p>
           <p className="text-sm text-gray-400">
             Created: {new Date(object.createdAt).toLocaleDateString()}

@@ -12,21 +12,24 @@ export class S3Service {
   constructor(private configService: ConfigService) {
     this.bucketName = this.configService.get<string>('S3_BUCKET_NAME');
     this.region = this.configService.get<string>('S3_REGION') || 'us-east-1';
-    
+
     const accessKeyId = this.configService.get<string>('S3_ACCESS_KEY');
     const secretAccessKey = this.configService.get<string>('S3_SECRET_KEY');
+    const configuredEndpoint = this.configService.get<string>('S3_ENDPOINT');
+    const endpoint = configuredEndpoint?.startsWith('arn:aws:s3')
+      ? undefined
+      : (configuredEndpoint || `https://s3.${this.region}.amazonaws.com`);
 
     if (!accessKeyId || !secretAccessKey || !this.bucketName) {
       console.warn('⚠️ S3 credentials are incomplete');
     }
 
-    // Standard S3 configuration - NO Access Point
+    // Standard S3 configuration for a normal bucket, not an access point ARN
     this.s3 = new AWS.S3({
       accessKeyId: accessKeyId,
       secretAccessKey: secretAccessKey,
       region: this.region,
-      endpoint: this.configService.get<string>('S3_ENDPOINT') || 'https://s3.amazonaws.com',
-      // IMPORTANT: These should be false for standard S3
+      endpoint,
       s3ForcePathStyle: false,
       signatureVersion: 'v4',
     });
@@ -34,7 +37,7 @@ export class S3Service {
     console.log('🔌 S3 Service initialized:', {
       bucket: this.bucketName,
       region: this.region,
-      endpoint: this.configService.get<string>('S3_ENDPOINT') || 'https://s3.amazonaws.com',
+      endpoint: endpoint || `https://s3.${this.region}.amazonaws.com`,
     });
   }
 

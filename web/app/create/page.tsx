@@ -22,6 +22,11 @@ export default function CreateObjectPage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      console.log('📷 File selected:', {
+        name: file.name,
+        type: file.type,
+        size: file.size,
+      })
       setImage(file)
       const reader = new FileReader()
       reader.onloadend = () => {
@@ -33,6 +38,11 @@ export default function CreateObjectPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    console.log('🔄 Submitting form...')
+    console.log('📝 Title:', title)
+    console.log('📝 Description:', description)
+    console.log('📷 Image:', image?.name)
     
     if (!title.trim() || !description.trim()) {
       toast({
@@ -55,21 +65,29 @@ export default function CreateObjectPage() {
     setLoading(true)
     try {
       const formData = new FormData()
-      formData.append('title', title)
-      formData.append('description', description)
+      formData.append('title', title.trim())
+      formData.append('description', description.trim())
       formData.append('image', image)
 
-      await ObjectsAPI.create(formData)
+      console.log('📤 Sending FormData with:', {
+        title: title.trim(),
+        description: description.trim(),
+        image: image.name,
+      })
+
+      const result = await ObjectsAPI.create(formData)
+      console.log('✅ Object created:', result)
+      
       toast({
         title: "Success",
         description: "Object created successfully",
       })
       router.push('/')
-    } catch (error) {
-      console.error('Error creating object:', error)
+    } catch (error: any) {
+      console.error('❌ Error creating object:', error)
       toast({
         title: "Error",
-        description: "Failed to create object",
+        description: error.message || "Failed to create object",
         variant: "destructive",
       })
     } finally {
