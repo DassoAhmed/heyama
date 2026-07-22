@@ -5,20 +5,4 @@ services:
     plan: free
     buildCommand: npm install && npm run build
     startCommand: npm run start:prod  # Changed from npm run dev
-    envVars:
-      - key: NODE_OPTIONS
-        value: "--max_old_space_size=512"
-      - key: NODE_ENV
-        value: "production"
-      - key: MONGODB_URI
-        value: "mongodb+srv://dassoahmed_db_user:HOdhyaME8dVA8br1@cluster0.hs5m3f7.mongodb.net/"
-      - key: S3_ACCESS_KEY
-        value: "AKIAZQ7IYRCFI2SB7TMF"
-      - key: S3_SECRET_KEY
-        value: "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"
-      - key: S3_BUCKET_NAME
-        value: "amzn-heyama-s3-bucket"
-      - key: S3_REGION
-        value: "us-east-1"
-      - key: S3_ENDPOINT
-        value: "https://s3.us-east-1.amazonaws.com"
+    
