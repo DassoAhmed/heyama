@@ -12,8 +12,7 @@ async function bootstrap() {
     process.env.CLIENT_URL || 'http://localhost:3000',
     'http://localhost:3001',
     'http://localhost:8081',
-    'https://heyama-web.vercel.app',
-    'https://your-web-app.vercel.app'
+    'https://heyama-web.vercel.app'
   ];
 
   app.enableCors({
@@ -50,22 +49,6 @@ async function bootstrap() {
     forbidNonWhitelisted: true,
   }));
   
-  // ==================== HEALTH CHECK ====================
-  // Use NestJS way - create a controller or use the underlying Express instance
-  const server = app.getHttpAdapter().getInstance();
-  
-  // If using Express
-  if (server && typeof server.get === 'function') {
-    server.get('/api/health', (req: any, res: any) => {
-      res.status(200).json({ 
-        success: true, 
-        message: 'Server is running', 
-        status: 'OK',
-        timestamp: new Date().toISOString()
-      });
-    });
-  }
-  
   // ==================== START SERVER ====================
   const port = process.env.PORT || 3000;
   await app.listen(port);
@@ -77,7 +60,6 @@ async function bootstrap() {
   console.log(`❤️  Health Check: http://localhost:${port}/api/health`);
   console.log(`🔌 Socket.IO: ws://localhost:${port}`);
   console.log(`📁 Uploads: http://localhost:${port}/uploads`);
-  console.log(`🌐 CORS enabled for: ${allowedOrigins.join(', ')}`);
   console.log(`======================================\n`);
 }
 
