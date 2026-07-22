@@ -9,10 +9,10 @@ async function bootstrap() {
   
   // ==================== CORS CONFIGURATION ====================
   const allowedOrigins = [
-    process.env.CLIENT_URL || 'http://localhost:3000',
-    'http://localhost:3001',
-    'http://localhost:8081',
-    'https://heyama-web.vercel.app'
+    process.env.CLIENT_URL ||   'https://heyama-43xq.onrender.com',
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:8081'
   ];
 
   app.enableCors({
