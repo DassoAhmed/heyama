@@ -2,20 +2,23 @@
   "version": 2,
   "builds": [
     {
-      "src": "src/main.ts",
+      "src": "dist/main.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "src/main.ts"
+      "dest": "dist/main.js"
     }
   ],
   "env": {
-    "NODE_OPTIONS": "--max-old-space-size=1024",
-    "NPM_CONFIG_PRODUCTION": "false"
+    "NODE_ENV": "production"
   },
-  "installCommand": "npm install --no-audit --no-fund --legacy-peer-deps",
-  "buildCommand": "npm run build"
+  "functions": {
+    "dist/main.js": {
+      "maxDuration": 10,
+      "memory": 1024
+    }
+  }
 }
