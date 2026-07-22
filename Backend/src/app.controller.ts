@@ -1,107 +1,38 @@
-import { 
-  Controller, 
-  Get, 
-  Post, 
-  Delete, 
-  Param, 
-  Body, 
-  UseInterceptors, 
-  UploadedFile, 
-  HttpException, 
-  HttpStatus 
-} from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { ObjectsService } from './objects.service';
-import { CreateObjectDto } from './dto/create-object.dto';
-import { ObjectResponseDto } from './dto/object-response.dto';
-import { ObjectsGateway } from './objects.gateway';
+import { Controller, Get } from '@nestjs/common';
 
-@Controller('objects')
-export class ObjectsController {
-  constructor(
-    private readonly objectsService: ObjectsService,
-    private readonly objectsGateway: ObjectsGateway,
-  ) {}
-
-  @Post()
-  @UseInterceptors(FileInterceptor('image', {
-    limits: {
-      fileSize: 5 * 1024 * 1024, // 5MB limit
-    },
-  }))
-  async create(
-    @Body() createObjectDto: CreateObjectDto,
-    @UploadedFile() file: Express.Multer.File,
-  ): Promise<ObjectResponseDto> {
-    try {
-      if (!file) {
-        throw new HttpException('Image file is required', HttpStatus.BAD_REQUEST);
-      }
-      
-      console.log('📤 Received file:', {
-        name: file.originalname,
-        size: file.size,
-        mimetype: file.mimetype,
-      });
-      
-      const newObject = await this.objectsService.create(createObjectDto, file);
-      
-      // Notify via WebSocket
-      this.objectsGateway.notifyObjectCreated(newObject);
-      
-      return newObject;
-    } catch (error) {
-      console.error('❌ Error in create controller:', error.message);
-      throw new HttpException(
-        error.message || 'Failed to create object',
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
-  }
-
+@Controller()
+export class AppController {
   @Get()
-  async findAll(): Promise<ObjectResponseDto[]> {
-    try {
-      return await this.objectsService.findAll();
-    } catch (error) {
-      console.error('❌ Error in findAll controller:', error.message);
-      throw new HttpException(
-        'Failed to fetch objects',
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
+  getHello() {
+    return {
+      status: 'success',
+      message: 'Welcome to Heyama Dev API! 🚀',
+      version: '1.0.0',
+      endpoints: {
+        objects: {
+          list: 'GET /objects',
+          create: 'POST /objects',
+          detail: 'GET /objects/:id',
+          delete: 'DELETE /objects/:id',
+        },
+        websocket: {
+          connection: 'ws://localhost:3000',
+          events: ['objectCreated', 'objectDeleted'],
+        },
+        health: 'GET /health',
+      },
+      documentation: 'API is ready to use!',
+      timestamp: new Date().toISOString(),
+    };
   }
 
-  @Get(':id')
-  async findOne(@Param('id') id: string): Promise<ObjectResponseDto> {
-    try {
-      return await this.objectsService.findOne(id);
-    } catch (error) {
-      if (error instanceof HttpException) throw error;
-      if (error.status === 404) {
-        throw new HttpException('Object not found', HttpStatus.NOT_FOUND);
-      }
-      throw new HttpException(
-        'Failed to fetch object',
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
-  }
-
-  @Delete(':id')
-  async delete(@Param('id') id: string): Promise<void> {
-    try {
-      await this.objectsService.delete(id);
-      this.objectsGateway.notifyObjectDeleted(id);
-    } catch (error) {
-      if (error instanceof HttpException) throw error;
-      if (error.status === 404) {
-        throw new HttpException('Object not found', HttpStatus.NOT_FOUND);
-      }
-      throw new HttpException(
-        'Failed to delete object',
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
+  @Get('health')
+  getHealth() {
+    return {
+      status: 'healthy',
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString(),
+      memory: process.memoryUsage(),
+    };
   }
 }
