@@ -17,13 +17,8 @@
   "author": "",
   "license": "ISC",
   "type": "commonjs",
-  "devDependencies": {
-    "@nestjs/cli": "^11.0.24",
-    "@types/multer": "^2.2.0",
-    "@types/multer-s3": "^3.0.3",
-    "@types/node": "^26.1.1"
-  },
   "dependencies": {
+    "@nestjs/cli": "^11.0.24",
     "@nestjs/common": "^11.1.28",
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.1.28",
@@ -42,6 +37,11 @@
     "rxjs": "^7.8.2",
     "socket.io": "^4.8.3",
     "uuid": "^14.0.1"
+  },
+  "devDependencies": {
+    "@types/multer": "^2.2.0",
+    "@types/multer-s3": "^3.0.3",
+    "@types/node": "^26.1.1"
   },
   "engines": {
     "node": ">=18.0.0",
