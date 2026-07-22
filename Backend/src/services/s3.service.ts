@@ -81,6 +81,7 @@ export class S3Service {
         Key: key,
         Body: file.buffer,
         ContentType: file.mimetype,
+        ACL: 'public-read',
       }).promise();
 
       console.log('✅ File uploaded successfully:', result.Location);
