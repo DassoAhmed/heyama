@@ -16,6 +16,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   useEffect(() => {
     let isMounted = true;
+    let socketInstance: Socket | null = null;
 
     const connectSocket = () => {
       try {
@@ -30,35 +31,34 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           baseUrl = baseUrl.replace('localhost', '10.0.2.2');
         }
 
-        console.log('🔌 Attempting Socket.IO connection to:', baseUrl);
+        console.log('🔌 Connecting to Socket.IO at:', baseUrl);
         console.log('📱 Platform:', Platform.OS);
 
-        // Create socket with minimal options for compatibility
-        const newSocket = io(baseUrl, {
-          transports: ['polling', 'websocket'], // Allow both
-          reconnectionAttempts: 3,
+        // Create socket with better options
+        socketInstance = io(baseUrl, {
+          transports: ['polling', 'websocket'],
+          reconnectionAttempts: 5,
           reconnectionDelay: 1000,
           reconnectionDelayMax: 5000,
-          timeout: 10000,
+          timeout: 20000,
           forceNew: true,
-          path: '/socket.io',
+          path: '/socket.io/',
           withCredentials: false,
           autoConnect: true,
-          // Let Socket.IO handle upgrade automatically
           upgrade: true,
           rememberUpgrade: true,
         });
 
         // Connection events
-        newSocket.on('connect', () => {
+        socketInstance.on('connect', () => {
           console.log('✅ Socket connected successfully!');
-          console.log('📡 Socket ID:', newSocket.id);
-          console.log('🔌 Transport:', newSocket.io.engine.transport.name);
+          console.log('📡 Socket ID:', socketInstance?.id);
+          console.log('🔌 Transport:', socketInstance?.io.engine.transport.name);
           setIsConnected(true);
           reconnectAttempts.current = 0;
         });
 
-        newSocket.on('connect_error', (error) => {
+        socketInstance.on('connect_error', (error) => {
           reconnectAttempts.current++;
           console.error(`❌ Socket connection error (attempt ${reconnectAttempts.current}):`, error.message);
           
@@ -70,78 +70,89 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           }
         });
 
-        newSocket.on('disconnect', (reason) => {
+        socketInstance.on('disconnect', (reason) => {
           console.log('🔴 Socket disconnected:', reason);
           setIsConnected(false);
+          
+          if (reason === 'io server disconnect') {
+            // Server disconnected us, try to reconnect
+            console.log('🔄 Attempting to reconnect...');
+            socketInstance?.connect();
+          }
         });
 
-        newSocket.on('reconnect', (attemptNumber) => {
+        socketInstance.on('reconnect', (attemptNumber) => {
           console.log(`🔄 Socket reconnected after ${attemptNumber} attempts`);
           setIsConnected(true);
         });
 
-        newSocket.on('reconnect_error', (error) => {
+        socketInstance.on('reconnect_error', (error) => {
           console.error('❌ Reconnection error:', error.message);
         });
 
-        newSocket.on('reconnect_failed', () => {
-          console.error('❌ Reconnection failed');
+        socketInstance.on('reconnect_failed', () => {
+          console.error('❌ Reconnection failed after all attempts');
+        });
+
+        socketInstance.on('error', (error) => {
+          console.error('❌ Socket error:', error);
         });
 
         // Handle acknowledgment
-        newSocket.on('connection_ack', (data) => {
+        socketInstance.on('connection_ack', (data) => {
           console.log('📨 Connection acknowledgment:', data);
         });
 
         // Handle pong
-        newSocket.on('pong', (data) => {
+        socketInstance.on('pong', (data) => {
           console.log('🏓 Pong received:', data);
         });
 
         // Log transport changes
-        newSocket.io.engine.on('upgrade', () => {
-          console.log('🔌 Transport upgraded to:', newSocket.io.engine.transport.name);
+        socketInstance.io.engine.on('upgrade', () => {
+          console.log('🔌 Transport upgraded to:', socketInstance?.io.engine.transport.name);
         });
 
         // Store socket
-        socketRef.current = newSocket;
+        socketRef.current = socketInstance;
         
         if (isMounted) {
-          setSocket(newSocket);
+          setSocket(socketInstance);
         }
 
         // Connect if not already connected
-        if (!newSocket.connected) {
-          newSocket.connect();
+        if (!socketInstance.connected) {
+          console.log('🔌 Initiating connection...');
+          socketInstance.connect();
         }
 
-        return newSocket;
+        return socketInstance;
       } catch (error) {
         console.error('❌ Failed to create socket:', error);
         return null;
       }
     };
 
-    // Wait before connecting
+    // Wait a moment before connecting
     const timer = setTimeout(() => {
-      const newSocket = connectSocket();
-      
-      return () => {
-        isMounted = false;
-        if (socketRef.current) {
-          console.log('🧹 Cleaning up socket');
-          socketRef.current.disconnect();
-          socketRef.current.close();
-          socketRef.current = null;
-        }
-        if (newSocket) {
-          newSocket.disconnect();
-          newSocket.close();
-        }
-      };
-    }, 500);
+      connectSocket();
+    }, 1000);
 
-    return () => clearTimeout(timer);
+    // Cleanup
+    return () => {
+      clearTimeout(timer);
+      isMounted = false;
+      if (socketRef.current) {
+        console.log('🧹 Cleaning up socket');
+        socketRef.current.disconnect();
+        socketRef.current.close();
+        socketRef.current = null;
+      }
+      if (socketInstance) {
+        socketInstance.disconnect();
+        socketInstance.close();
+      }
+    };
   }, []);
 
   // Log connection status

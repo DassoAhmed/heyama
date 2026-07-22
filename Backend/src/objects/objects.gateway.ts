@@ -33,20 +33,12 @@ export class ObjectsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
   afterInit(server: Server) {
     this.logger.log('🔌 Socket.IO Server initialized');
     this.logger.log(`📡 WebSocket endpoint: ws://localhost:3000`);
+    this.logger.log('✅ Gateway ready for connections');
     
-    // Check if server is available before accessing properties
-    if (this.server && this.server.engine) {
-      this.logger.log(`📡 Server ready with ${this.server.engine.clientsCount || 0} clients`);
-    } else {
-      this.logger.log('📡 Server initialized (waiting for connections)');
-    }
-    
-    // Log all connections
-    if (server && server.engine) {
-      server.engine.on('connection', (socket) => {
-        this.logger.log(`🔌 Engine connection from: ${socket.id}`);
-      });
-    }
+    // Log when server is ready
+    server.on('connection', (socket) => {
+      this.logger.log(`📡 New connection: ${socket.id}`);
+    });
   }
 
   handleConnection(client: Socket) {
@@ -121,10 +113,5 @@ export class ObjectsGateway implements OnGatewayInit, OnGatewayConnection, OnGat
         this.logger.warn('⚠️ Server not initialized');
       }
     }
-  }
-
-  // Get client count safely
-  getClientCount(): number {
-    return this.clients.size;
   }
 }
