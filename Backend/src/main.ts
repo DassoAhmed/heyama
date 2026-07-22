@@ -9,20 +9,24 @@ async function bootstrap() {
   
   // ==================== CORS CONFIGURATION ====================
   const allowedOrigins = [
-    process.env.CLIENT_URL ||   'https://heyama-43xq.onrender.com',
-  'http://localhost:3000',
-  'http://localhost:3001',
-  'http://localhost:8081'
+    'https://heyama-liard.vercel.app',  
+    'https://heyama-43xq.onrender.com',  
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://localhost:8081',
+    'http://localhost:5173'
   ];
 
   app.enableCors({
     origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl)
       if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin) || process.env.NODE_ENV === 'development') {
+      
+      if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
         console.log('❌ Blocked origin:', origin);
-        callback(new Error('Not allowed by CORS'));
+        callback(new Error(`CORS: Origin ${origin} not allowed`));
       }
     },
     credentials: true,
@@ -49,6 +53,16 @@ async function bootstrap() {
     forbidNonWhitelisted: true,
   }));
   
+  // ==================== HEALTH CHECK ====================
+  app.getHttpAdapter().get('/api/health', (req, res) => {
+    res.status(200).json({ 
+      success: true, 
+      message: 'Server is running', 
+      status: 'OK',
+      timestamp: new Date().toISOString()
+    });
+  });
+  
   // ==================== START SERVER ====================
   const port = process.env.PORT || 3000;
   await app.listen(port);
@@ -60,18 +74,8 @@ async function bootstrap() {
   console.log(`❤️  Health Check: http://localhost:${port}/api/health`);
   console.log(`🔌 Socket.IO: ws://localhost:${port}`);
   console.log(`📁 Uploads: http://localhost:${port}/uploads`);
+  console.log(`🌐 CORS enabled for: ${allowedOrigins.join(', ')}`);
   console.log(`======================================\n`);
 }
-
-// ==================== GRACEFUL SHUTDOWN ====================
-process.on('SIGINT', () => {
-  console.log('🛑 Shutting down server...');
-  process.exit(0);
-});
-
-process.on('SIGTERM', () => {
-  console.log('🛑 Shutting down server...');
-  process.exit(0);
-});
 
 bootstrap();
