@@ -1,23 +1,25 @@
 /** @type {import('next').NextConfig} */
+const path = require('path')
+
 const nextConfig = {
   images: {
     unoptimized: true,
-    domains: [
-      'amzn-heyama-s3-bucket.s3.amazonaws.com',
-      'amzn-heyama-s3-bucket.s3.us-east-1.amazonaws.com'
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'amzn-heyama-s3-bucket.s3.amazonaws.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'amzn-heyama-s3-bucket.s3.us-east-1.amazonaws.com',
+      },
     ],
   },
-  // Add mobile optimization
-  swcMinify: true,
   compress: true,
-  // Ensure responsive viewport
   reactStrictMode: true,
-  // Optimize for mobile
-  experimental: {
-    optimizeCss: true,
-    scrollRestoration: true,
+  turbopack: {
+    root: path.resolve(__dirname),
   },
-  // Add proper viewport meta tag
   headers: async () => {
     return [
       {
@@ -29,8 +31,8 @@ const nextConfig = {
           },
         ],
       },
-    ];
+    ]
   },
-};
+}
 
-module.exports = nextConfig;
+module.exports = nextConfig

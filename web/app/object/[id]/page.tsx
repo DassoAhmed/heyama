@@ -35,12 +35,19 @@ export default function ObjectDetailPage() {
       const data = await ObjectsAPI.getOne(id)
       console.log('✅ Object fetched:', data.title)
       console.log('📷 Image URL:', data.imageUrl)
+      setImageError(false)
+      setImageLoading(true)
       setObject(data)
     } catch (error) {
       console.error('❌ Error fetching object:', error)
     } finally {
       setLoading(false)
     }
+  }
+
+  const getSafeImageUrl = (url?: string) => {
+    if (!url) return ''
+    return /^https?:\/\//i.test(url) ? url : ''
   }
 
   const handleImageError = () => {
@@ -59,6 +66,8 @@ export default function ObjectDetailPage() {
     const title = object?.title || 'Image'
     return `https://via.placeholder.com/800x600/cccccc/666666?text=${encodeURIComponent(title)}`
   }
+
+  const imageSrc = getSafeImageUrl(object?.imageUrl) || getFallbackImage()
 
   if (loading) {
     return (
@@ -111,15 +120,13 @@ export default function ObjectDetailPage() {
             
             {!imageError ? (
               <img
-                src={object.imageUrl}
+                src={imageSrc}
                 alt={object.title}
                 className={`w-full h-64 object-cover transition-opacity duration-300 ${
                   imageLoading ? 'opacity-0' : 'opacity-100'
                 }`}
                 onError={handleImageError}
                 onLoad={handleImageLoad}
-                crossOrigin="anonymous"
-                referrerPolicy="no-referrer"
               />
             ) : (
               <div className="w-full h-64 flex flex-col items-center justify-center bg-gray-100">

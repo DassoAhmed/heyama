@@ -27,7 +27,7 @@ export function ObjectCard({ object, onDelete }: ObjectCardProps) {
         <div className="relative w-full pt-[56.25%] bg-gray-100">
           {!imageError ? (
             <img
-              src={object.imageUrl}
+              src={object.imageUrl || 'https://via.placeholder.com/800x600/cccccc/666666?text=No+Image'}
               alt={object.title}
               className="absolute inset-0 w-full h-full object-cover"
               onError={() => setImageError(true)}
