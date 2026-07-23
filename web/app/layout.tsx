@@ -7,7 +7,7 @@ import { ToastProvider } from '@/components/ui/Toast'
 const inter = Inter({ 
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-inter',
+  preload: true,
 })
 
 export const metadata: Metadata = {
@@ -24,6 +24,7 @@ export const metadata: Metadata = {
     title: 'Heyama Objects',
     description: 'Manage your objects with real-time updates',
     type: 'website',
+    url: 'https://heyama-liard.vercel.app',
   },
 }
 
@@ -42,18 +43,34 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <meta name="theme-color" content="#007aff" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="mobile-web-app-capable" content="yes" />
         <link rel="manifest" href="/manifest.json" />
+        {/* Add fallback styles for mobile */}
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            html, body {
+              min-height: 100vh;
+              min-height: -webkit-fill-available;
+            }
+            #__next {
+              min-height: 100vh;
+              min-height: -webkit-fill-available;
+              display: flex;
+              flex-direction: column;
+            }
+          `
+        }} />
       </head>
-      <body className="antialiased bg-gray-50 min-h-screen">
+      <body className={inter.className}>
         <ToastProvider>
           <SocketProvider>
-            <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-7xl">
+            <main className="min-h-screen bg-gray-50">
               {children}
             </main>
           </SocketProvider>
