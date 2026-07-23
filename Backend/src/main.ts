@@ -14,7 +14,16 @@ async function bootstrap() {
     'http://localhost:3000',
     'http://localhost:3001',
     'http://localhost:8081',
-    'http://localhost:5173'
+    'http://localhost:5173',
+     // Add these for mobile
+  'https://heyama-liard.vercel.app',
+  'capacitor://localhost',
+  'ionic://localhost',
+  'http://localhost',
+  'http://127.0.0.1',
+   // Add your Vercel preview URLs
+  'https://heyama-liard.vercel.app',
+  'https://heyama-liard.vercel.app',
   ];
 
   app.enableCors({
