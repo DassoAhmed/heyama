@@ -111,3 +111,9 @@ npm run build
 - The backend uses NestJS and Socket.IO.
 - Images are uploaded to AWS S3 through the backend service in `Backend/src/services/s3.service.ts`.
 - If uploads fail with `Access denied`, verify the AWS IAM user, bucket policy, and region settings first.
+
+## Mobile deployment troubleshooting
+
+For an educational walkthrough of the mobile browser rendering/deployment fix, see:
+
+- `docs/mobile-deployment-fix.md`

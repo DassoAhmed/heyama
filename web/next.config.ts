@@ -20,19 +20,6 @@ const nextConfig = {
   turbopack: {
     root: path.resolve(__dirname),
   },
-  headers: async () => {
-    return [
-      {
-        source: '/:path*',
-        headers: [
-          {
-            key: 'Viewport',
-            value: 'width=device-width, initial-scale=1.0',
-          },
-        ],
-      },
-    ]
-  },
 }
 
 module.exports = nextConfig
