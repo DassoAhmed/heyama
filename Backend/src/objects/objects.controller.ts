@@ -16,7 +16,7 @@ export class ObjectsController {
   @UseInterceptors(FileInterceptor('image'))
   async create(
     @Body() createObjectDto: CreateObjectDto,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: any,
   ): Promise<ObjectResponseDto> {
     try {
       if (!file) {
@@ -29,10 +29,11 @@ export class ObjectsController {
       this.objectsGateway.notifyObjectCreated(newObject);
       
       return newObject;
-    } catch (error) {
-      console.error('❌ Error in create controller:', error.message);
+    } catch (error: any) {
+      const message = error?.message ?? 'Failed to create object';
+      console.error('❌ Error in create controller:', message);
       throw new HttpException(
-        error.message || 'Failed to create object',
+        message,
         HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
@@ -42,8 +43,9 @@ export class ObjectsController {
   async findAll(): Promise<ObjectResponseDto[]> {
     try {
       return await this.objectsService.findAll();
-    } catch (error) {
-      console.error('❌ Error in findAll controller:', error.message);
+    } catch (error: any) {
+      const message = error?.message ?? 'Failed to fetch objects';
+      console.error('❌ Error in findAll controller:', message);
       throw new HttpException(
         'Failed to fetch objects',
         HttpStatus.INTERNAL_SERVER_ERROR
@@ -55,9 +57,9 @@ export class ObjectsController {
   async findOne(@Param('id') id: string): Promise<ObjectResponseDto> {
     try {
       return await this.objectsService.findOne(id);
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof HttpException) throw error;
-      if (error.status === 404) {
+      if (error?.status === 404) {
         throw new HttpException('Object not found', HttpStatus.NOT_FOUND);
       }
       throw new HttpException(
@@ -74,9 +76,9 @@ export class ObjectsController {
       
       // Notify via WebSocket
       this.objectsGateway.notifyObjectDeleted(id);
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof HttpException) throw error;
-      if (error.status === 404) {
+      if (error?.status === 404) {
         throw new HttpException('Object not found', HttpStatus.NOT_FOUND);
       }
       throw new HttpException(
