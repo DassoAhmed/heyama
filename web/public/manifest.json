@@ -1,0 +1,19 @@
+{
+  "name": "Heyama",
+  "short_name": "Heyama",
+  "description": "Manage your objects with real-time updates",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#007aff",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/window.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

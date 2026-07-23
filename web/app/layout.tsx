@@ -18,8 +18,9 @@ export const metadata: Metadata = {
   keywords: ['objects', 'management', 'real-time', 'heyama'],
   robots: 'index, follow',
   icons: {
-    icon: '/favicon.ico',
+    icon: '/window.svg',
   },
+  manifest: '/manifest.json',
   openGraph: {
     title: 'Heyama Objects',
     description: 'Manage your objects with real-time updates',

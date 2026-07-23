@@ -61,9 +61,25 @@ async function bootstrap() {
   }));
   
   // ==================== START SERVER ====================
-  const port = process.env.PORT || 3000;
-  await app.listen(port);
-  
+  let port = Number(process.env.PORT) || 3000;
+
+  while (true) {
+    try {
+      await app.listen(port, '0.0.0.0');
+      break;
+    } catch (error) {
+      const err = error as NodeJS.ErrnoException;
+
+      if (err.code === 'EADDRINUSE') {
+        console.warn(`⚠️ Port ${port} is busy, retrying on ${port + 1}`);
+        port += 1;
+        continue;
+      }
+
+      throw error;
+    }
+  }
+
   console.log(`\n🚀 ======================================`);
   console.log(`✅ Server is running on port ${port}`);
   console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
