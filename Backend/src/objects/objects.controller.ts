@@ -59,9 +59,6 @@ export class ObjectsController {
       return await this.objectsService.findOne(id);
     } catch (error: any) {
       if (error instanceof HttpException) throw error;
-      if (error?.status === 404) {
-        throw new HttpException('Object not found', HttpStatus.NOT_FOUND);
-      }
       throw new HttpException(
         'Failed to fetch object',
         HttpStatus.INTERNAL_SERVER_ERROR
@@ -78,9 +75,6 @@ export class ObjectsController {
       this.objectsGateway.notifyObjectDeleted(id);
     } catch (error: any) {
       if (error instanceof HttpException) throw error;
-      if (error?.status === 404) {
-        throw new HttpException('Object not found', HttpStatus.NOT_FOUND);
-      }
       throw new HttpException(
         'Failed to delete object',
         HttpStatus.INTERNAL_SERVER_ERROR

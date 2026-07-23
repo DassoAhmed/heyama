@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import axios from 'axios'
 import { useRouter } from 'next/navigation'
 import { ObjectsAPI } from '@/services/api'
 import { Button } from '@/components/ui/Button'
@@ -17,29 +18,59 @@ interface Object {
 export default function ObjectDetailClient({ id }: { id: string }) {
   const [object, setObject] = useState<Object | null>(null)
   const [loading, setLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [imageError, setImageError] = useState(false)
   const [imageLoading, setImageLoading] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
-    fetchObject()
-  }, [id])
+    let isMounted = true
 
-  const fetchObject = async () => {
-    try {
-      console.log('📥 Fetching object:', id)
-      const data = await ObjectsAPI.getOne(id)
-      console.log('✅ Object fetched:', data.title)
-      console.log('📷 Image URL:', data.imageUrl)
-      setImageError(false)
-      setImageLoading(true)
-      setObject(data)
-    } catch (error) {
-      console.error('❌ Error fetching object:', error)
-    } finally {
-      setLoading(false)
+    const fetchObject = async () => {
+      try {
+        console.log('📥 Fetching object:', id)
+        setErrorMessage(null)
+        const data = await ObjectsAPI.getOne(id)
+
+        if (!isMounted) return
+
+        console.log('✅ Object fetched:', data.title)
+        console.log('📷 Image URL:', data.imageUrl)
+        setImageError(false)
+        setImageLoading(true)
+        setObject(data)
+      } catch (error) {
+        if (!isMounted) return
+
+        console.error('❌ Error fetching object:', error)
+
+        if (axios.isAxiosError(error)) {
+          const status = error.response?.status
+          if (status === 400) {
+            setErrorMessage('Invalid object id')
+          } else if (status === 404) {
+            setErrorMessage('Object not found')
+          } else {
+            setErrorMessage('Failed to fetch object. Please try again.')
+          }
+        } else {
+          setErrorMessage('Failed to fetch object. Please try again.')
+        }
+
+        setObject(null)
+      } finally {
+        if (isMounted) {
+          setLoading(false)
+        }
+      }
     }
-  }
+
+    fetchObject()
+
+    return () => {
+      isMounted = false
+    }
+  }, [id])
 
   const getSafeImageUrl = (url?: string) => {
     if (!url) return ''
@@ -80,7 +111,7 @@ export default function ObjectDetailClient({ id }: { id: string }) {
   if (!object) {
     return (
       <div className="container mx-auto p-4 text-center">
-        <p>Object not found</p>
+        <p>{errorMessage || 'Object not found'}</p>
         <Button onClick={() => router.push('/')} className="mt-4">
           ← Back to List
         </Button>

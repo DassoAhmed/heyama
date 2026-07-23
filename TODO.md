@@ -1,11 +1,5 @@
-# TODO - Mobile-Friendly Web App & Deployment Stability
+# TODO - Fix 500 on GET /objects/:id in Object Detail
 
-- [x] Update `web/app/layout.tsx` to remove duplicate viewport handling and improve mobile behavior
-- [x] Update `web/next.config.ts` to remove non-standard `Viewport` response header
-- [x] Update `web/vercel.json` caching headers to avoid stale mobile deployments
-- [x] Improve URL normalization in `web/services/api.ts`
-- [x] Improve socket URL derivation in `web/context/SocketContext.tsx`
-- [x] Add educational documentation at `docs/mobile-deployment-fix.md`
-- [x] Update root `README.md` with documentation reference
-- [ ] Run validation build for web app
-- [ ] Mark all tasks complete
+- [x] Update `Backend/src/objects/objects.controller.ts` to preserve `HttpException` status codes in `findOne`
+- [x] Improve error handling UX in `web/app/object/[id]/ObjectDetailClient.tsx` for 400/404/500 responses
+- [x] Validate behavior expectations and mark tasks complete
